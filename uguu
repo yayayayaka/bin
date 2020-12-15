@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Takes a file on $1 or pipe on stdin and return an url where its publicy hosted now.
+# useful if you want to send a smaller file quickly to your IRC pals.
+
+[ -z "$1" ] && TARGET="-" || TARGET="$1"
+if [ "$TARGET" = "-" ]; then
+       TARGET="$(mktemp).txt"
+       cat > "$TARGET"
+       DELETE="$TARGET"
+fi
+url=$(curl -F randomname=yes -F "file=@$TARGET" "https://uguu.se/api.php?d=upload-tool")
+
+echo "$url"
+hash xclip >/dev/null 2>&1 \
+    &&  echo -n "$url" | xclip -selection clipboard
+
+[ "$TARGET" = "$DELETE" ] && rm "$DELETE"
