@@ -1,0 +1,99 @@
+#!/bin/sh
+
+# Depends: sh, mktemp, curl, psutils, file
+# Optional: torsocks (for handling onion links),
+#   i3-sensible-terminal (for spawning a new terminal)
+
+usage() {
+    cat <<EOL
+Usage:
+ xdg-open [ -h | <PATH> | <URL> ]
+
+A wrapper for /usr/bin/xdg-open that directly
+passes media to their respective media players.
+
+Options:
+ -h, --help     Display this help message and exit
+EOL
+    exit 0
+}
+
+# Your preferred application with arguments
+MEDIA_PLAYER="mpv"
+IMAGE_VIEWER="feh -."
+
+
+open() {
+    # Check what kind of link is being supplied
+    case "$1" in
+        http?://invidio.us/watch*|http?://*hooktube.com/watch*|http?://*youtube.com/watch*|http?://*youtu.be/*|rtmp://*)
+            setsid $MEDIA_PLAYER "$1" >/dev/null 2>&1 &
+            ;;
+        http?://*twitter.com/*)
+            setsid /usr/bin/xdg-open "$(echo "$1" | sed -E 's/(mobile.)*twitter.com/nitter.snopyta.org/')" &
+            ;;
+        http://*|https://*|gopher://*)
+            case "$1" in *.onion*) torsocks=torsocks ;; esac
+            tmp="$(mktemp)"
+            $torsocks curl -L "$1" > "$tmp"
+            open_file "$tmp" "$1"
+            rm "$tmp"
+            ;;
+        /*)
+            open_file "$1" "file://$1"
+            ;;
+        *)
+            open_file "$(pwd)/$1" "file://$(pwd)/$1"
+    esac
+}
+
+open_file() {
+    type="$(file -b "$1")"
+
+    case "$type" in
+        JPEG*|PNG*)
+            setsid $IMAGE_VIEWER "$1" 2>&1 >/dev/null &
+            ;;
+        *MP4*|WebM*|GIF*)
+            case "$MEDIA_PLAYER" in mpv*) MEDIA_PLAYER="$MEDIA_PLAYER --loop-file=inf" ;; esac
+            setsid $MEDIA_PLAYER "$1" 2>&1 >/dev/null &
+            ;;
+        *audio*|*Audio*)
+            $i3_sensible_terminal $MEDIA_PLAYER "$1"
+            ;;
+        *)
+            case "$2" in
+                *.onion*)
+                    setsid $i3_sensible_terminal torsocks w3m "$2" &
+                    ;;
+                *)
+                    setsid /usr/bin/xdg-open "$2" &
+                    ;;
+            esac
+    esac
+}
+
+
+# Check prerequisites
+for i in sh /usr/bin/xdg-open mktemp curl \
+        torsocks i3-sensible-terminal setsid sed; do
+    if [ ! "$(command -v $i)" ]; then
+        echo "Warning: prerequisite $i not found in PATH" >&2
+    fi
+done
+
+
+# Spawn a new terminal if not invoked from a terminal
+[ "$(readlink -f /proc/"$(ps -o ppid:1= -p $$)"/exe)" != "$(readlink -f "$SHELL")" ] && \
+    i3_sensible_terminal="i3-sensible-terminal -e"
+
+
+[ -z "$1" ] && usage
+case "$1" in
+    -h|--help)
+        usage
+        ;;
+    *)
+        open "$1"
+        ;;
+esac
