@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Usage: random_wallpaper [ /PATH/TO/WALLPAPERS ]
+
+# Select a random picture from a given
+# directory and set it as background image.
+
+# Dependencies: find, shuf, feh
+
+[ -z "$1" ] && gallery_folder="$HOME/Pictures/wallpaper/" || gallery_folder="$1"
+
+export XAUTHORITY="$HOME/.Xauthority"
+export DISPLAY=":0" # There must be a better way to determine the current display number
+
+file="$(mktemp)"
+find "$gallery_folder" -type f -maxdepth 1 2>/dev/null >"$file"
+shuf -n 1 "$file" | xargs -i feh --bg-scale {}
+rm "$file"
