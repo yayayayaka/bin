@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Take a screenshot, optimize it with optipng and copy it's location to clipboard
+
+set -x
+scrot -s -q 100 -e \
+'set -x;
+location="$$HOME/Pictures/screenshots";
+optipng -quiet "$f" && mv "$f" "$$location/" && echo -n "$$location/$n" | xclip -selection clipboard'
