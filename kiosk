@@ -1,0 +1,54 @@
+#!/bin/sh
+
+usage () {
+    cat <<EOL
+Usage:
+ kiosk [ -h | URL ]
+
+Opens an URL in "kiosk" / "app" mode.
+Currently supported by Firefox{,-esr} and Chrom{e,ium}
+
+Options:
+ -h, --help     Display this help message and exit
+EOL
+exit 0
+}
+
+open () {
+    case "$(xdg-settings get default-web-browser 2>/dev/null)" in
+        *chrom*)
+            for chromium in chromium chromium-browser chrome google-chrome; do
+                hash "$chromium" >/dev/null 2>&1 \
+                    && (setsid $chromium --app="$1" &) \
+                    && break
+            done
+            ;;
+        *[fF]irefox*)
+            for firefox in firefox firefox-esr; do
+                hash "$firefox" >/dev/null 2>&1 \
+                    && (setsid $firefox -P app --class element --kiosk "$1" &) \
+                    && break
+            done
+            ;;
+    esac
+}
+
+# Check prerequisites
+for i in sh setsid xdg-settings; do
+    if [ ! "$(command -v $i)" ]; then
+        echo "Error: prerequisite $i not found in PATH" >&2
+        abort="true"
+    fi
+done
+[ "$abort" = "true" ] && exit 1
+
+[ -z "$1" ] && usage
+case "$1" in
+    -h|--help)
+        usage
+        ;;
+    *)
+        open "$1"
+        ;;
+esac
+
