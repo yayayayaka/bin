@@ -1,0 +1,32 @@
+#!/bin/sh
+
+help() {
+    cat <<EOL
+Usage: git-all [GIT_COMMAND]
+
+Search recursively for git repositories in your current working directory and
+run a git(1) command in all of them.
+
+Examples:
+    \`git all fetch --all\`
+    \`git all status -sb\`
+
+EOL
+    exit 0
+}
+
+[ -z "$1" ] && help
+case "$1" in -h|--help) help ;; *) ;; esac
+
+find -L "$(pwd)" -type d -name '.git' | sed 's|/.git$||' | while read name; do
+    (
+        [ -d "$name" ] || continue
+        if ! [ -d "$name/.git" ]; then
+            echo "$name is not a git repo"
+            continue
+        fi
+        cd "$name" || exit 1
+        git -c color.status=always "$@"
+    )|sed "s|^|$(printf "\033[1;36m% 32s\033[0m" "${name}"): |"
+    echo ""
+done
