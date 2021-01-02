@@ -1,0 +1,92 @@
+#!/bin/sh
+#
+# record - record an area of the screen as video
+
+### CONFIGURATION
+# Where you want your recordings to be stored
+dir=~/Pictures/screenshots
+# filename of the recording
+current=$(date +%F_%H-%M-%S)
+###
+
+usage() {
+    cat <<EOL
+$(basename $0) - Record a selection of the screen with ffmpeg
+
+Usage:
+ $(basename $0) [ -h | -a ]
+
+Options:
+ -a, --with-audio Record a selection of the screen with audio
+ -h, --help       Display this help message and quit
+EOL
+    exit 0
+}
+
+record() {
+    hacksaw -n | {
+        IFS=+x read -r w h x y
+
+        w=$((w + w % 2))
+        h=$((h + h % 2))
+
+        ffmpeg               \
+            -v 16            \
+            -r 30            \
+            -f x11grab       \
+            -s "${w}x${h}"   \
+            -i ":0.0+$x,$y"  \
+            -preset slow     \
+            -c:v h264        \
+            -pix_fmt yuv420p \
+            -crf 20          \
+            "$dir/$current.mp4"
+    }
+    printf "%s" "$dir/$current.mp4" | xclip -selection clipboard
+}
+
+record_with_audio() {
+    hacksaw -n | {
+        IFS=+x read -r w h x y
+
+        w=$((w + w % 2))
+        h=$((h + h % 2))
+
+        ffmpeg               \
+            -v 16            \
+            -r 30            \
+            -f pulse -i "$(pacmd list-sources | grep -PB 1 'analog.*monitor>' | head -n 1 | sed -E 's/.* //g')"    \
+            -f x11grab       \
+            -s "${w}x${h}"   \
+            -i ":0.0+$x,$y"  \
+            -pix_fmt yuv420p \
+            -preset veryfast \
+            -c:v h264        \
+            -crf 20          \
+            "$dir/$current.mp4"
+    }
+    printf  "%s" "$dir/$current.mp4" | xclip -selection clipboard
+}
+
+# Check prerequisites
+for i in hacksaw ffmpeg; do
+    if [ ! "$(command -v $i)" ]; then
+        echo "Error: prerequisite $i not found in PATH" >&2
+        exit 1
+    fi
+done
+
+mkdir -p "$dir"
+
+case $1 in
+    -h|--help)
+        usage
+        ;;
+    -a|--audio)
+        record_with_audio
+        ;;
+    *)
+        record
+        ;;
+esac
+
