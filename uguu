@@ -13,6 +13,6 @@ url=$(curl -F randomname=yes -F "file=@$TARGET" "https://uguu.se/api.php?d=uploa
 
 echo "$url"
 hash xclip >/dev/null 2>&1 \
-    &&  echo -n "$url" | xclip -selection clipboard
+    &&  printf "%s" "$url" | xclip -selection clipboard
 
 [ "$TARGET" = "$DELETE" ] && rm "$DELETE"
