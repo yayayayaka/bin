@@ -1,0 +1,16 @@
+#!/bin/sh
+# git-yayayayaka - Set default git user.name & user.email
+
+echo "Setting default git user for yayayayaka..."
+
+hash git >/dev/null 2>&1 || \
+    (echo "error: prerequisite git not found in PATH" >&2 exit 1)
+
+[ "$1" = "--global" ] && global="--global"
+
+set -x
+git config $global user.name "Lara"
+git config $global user.email "lara@uwu.is"
+set +x
+
+echo "Done!"
