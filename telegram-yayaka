@@ -1,0 +1,8 @@
+#!/bin/sh
+# Open a Telegram URL in an existing Telegram session
+
+profile_directory="$HOME/.local/share/Telegram_Yayaka"
+mkdir -p "$profile_directory"
+
+setsid /usr/bin/telegram-desktop -many -workdir "$profile_directory" -- "$@" >/dev/null 2>&1 & 
+
