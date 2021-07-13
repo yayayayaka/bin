@@ -1,0 +1,11 @@
+#!/bin/bash
+# List available xdg-mime defaults.
+# Useful for configuring default applications for certain file types.
+#
+# See https://unix.stackexchange.com/a/67277
+
+find /usr/share/applications ~/.local/share/applications -iname '*.desktop' -print0 | while IFS= read -r -d $'\0' d; do
+    for m in $(grep MimeType "$d" | cut -d= -f2 | tr ";" " "); do
+        echo xdg-mime default "'$d'" "'$m'"
+    done
+done
