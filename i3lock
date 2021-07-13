@@ -1,0 +1,5 @@
+#!/bin/sh
+
+color=a6a28c
+#
+/usr/bin/i3lock --radius 100 -B 5 --indicator --keylayout 0 -k --pass-volume-keys --layout-color=$color --time-color=$color --date-color=$color --ring-width 10 --date-str="%a, %e.%m.%Y KW %U"
