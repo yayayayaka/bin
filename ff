@@ -1,0 +1,10 @@
+#!/bin/sh
+# ff - launch firefox-esr
+# Some package managers ship the firefox-esr binary as "firefox"
+# which is a bit annoying.
+
+for firefox in firefox firefox-esr; do
+    hash "$firefox" >/dev/null 2>&1 \
+        && (setsid "$firefox" "$@" >/dev/null 2>&1 &) \
+        && break
+done
