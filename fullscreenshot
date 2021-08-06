@@ -1,6 +1,6 @@
 #!/bin/sh
-# Takes a screenshot of a selection, optimizes it with `optipng` and copies 
-# its location to the clipboard. To capture the whole screen, use `fullscreenshot`
+# Takes screenshot, optimizes it with `optipng` and copies 
+# its location to the clipboard.
 
 #### Configuration
 # Set the location to save your screenshots
@@ -17,7 +17,7 @@ for i in optipng xclip; do
         echo "Warning: $i not found in PATH" >&2
     fi
 done
-for i in sh hacksaw shotgun; do
+for i in sh shotgun; do
     if [ ! "$(command -v $i)" ]; then
         echo "Error: prerequisite $i not found in PATH" >&2
         abort=true
@@ -31,9 +31,7 @@ cd "$SCREENSHOT_DIR"
 
 set -xe
 
-selection="$(hacksaw)"
-
-shotgun -g "$selection" "$file"
+shotgun "$file"
 [ "$(command -v optipng)" ] && optipng "$file"
 
 if [ "$(command -v xclip)" ]; then 
