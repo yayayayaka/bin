@@ -12,7 +12,7 @@ fi
 url=$(curl -F randomname=yes -F "file=@$TARGET" "https://uguu.se/api.php?d=upload-tool")
 
 echo "$url"
-hash xclip >/dev/null 2>&1 \
+command -v xclip >/dev/null 2>&1 \
     &&  printf "%s" "$url" | xclip -selection clipboard
 
 [ "$TARGET" = "$DELETE" ] && rm "$DELETE"

@@ -3,7 +3,7 @@
 
 echo "Setting default git user for yayayayaka..."
 
-hash git >/dev/null 2>&1 || \
+command -v git >/dev/null 2>&1 || \
     (echo "error: prerequisite git not found in PATH" >&2; exit 1)
 
 [ "$1" = "--global" ] && global="--global"

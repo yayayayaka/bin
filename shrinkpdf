@@ -32,7 +32,7 @@
 
 # Check prerequisites
 for i in gs wc; do
-    hash "$i" >/dev/null 2>&1 || \
+    command -v "$i" >/dev/null 2>&1 || \
         (echo "Error: prerequisite $i not found in PATH" >&2; exit 1)
 done
 

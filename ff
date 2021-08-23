@@ -4,7 +4,7 @@
 # which is a bit annoying.
 
 for firefox in firefox firefox-esr; do
-    hash "$firefox" >/dev/null 2>&1 \
+    command -v "$firefox" >/dev/null 2>&1 \
         && (setsid "$firefox" "$@" >/dev/null 2>&1 &) \
         && break
 done
