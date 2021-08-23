@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Some magic script to run xrandr with the appropriate args
 # when changing my working envoironment
 
