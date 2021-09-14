@@ -22,6 +22,8 @@ EOL
 MEDIA_PLAYER="mpv"
 IMAGE_VIEWER="feh -."
 
+path=$(echo $PATH | sed "s|$HOME/bin:||g")
+export PATH=$path
 
 open() {
     # Check what kind of link is being supplied
@@ -30,7 +32,7 @@ open() {
             setsid $MEDIA_PLAYER "$1" >/dev/null 2>&1 &
             ;;
         http?://*twitter.com/*)
-            setsid /usr/bin/xdg-open "$(echo "$1" | sed -E 's/(mobile.)*twitter.com/nitter.snopyta.org/')" &
+            setsid xdg-open "$(echo "$1" | sed -E 's/(mobile.)*twitter.com/nitter.snopyta.org/')" &
             ;;
         http://*|https://*|gopher://*)
             case "$1" in *.onion*) torsocks=torsocks ;; esac
@@ -67,7 +69,7 @@ open_file() {
                     setsid $i3_sensible_terminal torsocks w3m "$2" &
                     ;;
                 *)
-                    setsid /usr/bin/xdg-open "$2" &
+                    setsid xdg-open "$2" &
                     ;;
             esac
     esac
@@ -75,7 +77,7 @@ open_file() {
 
 
 # Check prerequisites
-for i in sh /usr/bin/xdg-open mktemp curl \
+for i in sh xdg-open mktemp curl \
         torsocks i3-sensible-terminal setsid sed; do
     if [ ! "$(command -v $i)" ]; then
         echo "Warning: prerequisite $i not found in PATH" >&2
