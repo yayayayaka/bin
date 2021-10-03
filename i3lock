@@ -1,5 +1,22 @@
 #!/bin/sh
 
+if which i3lock-color >/dev/null 2>&1
+then
+    # NixOS...
+    i3lock=$(which i3lock-color)
+    layoutcolor="--layoutcolor"
+    timecolor="--timecolor"
+    datecolor="--datecolor"
+    ringwidth="--ring-width"
+    datestr="--datestr"
+
+else
+    # Arch Linux... what the fuck?
+    i3lock=$(which i3lock)
+    layoutcolor="--layout-color"
+    timecolor="--time-color"
+    datecolor="--date-color"
+fi
+
 color=a6a28c
-#
-/usr/bin/i3lock --radius 100 -B 5 --indicator --keylayout 0 -k --pass-volume-keys --layout-color=$color --time-color=$color --date-color=$color --ring-width 10 --date-str="%a, %e.%m.%Y KW %U"
+$i3lock --radius 100 -B 5 --indicator --keylayout 0 -k --pass-volume-keys $layoutcolor=$color $timecolor=$color $datecolor=$color $ringwidth 10 $datestr="%a, %e.%m.%Y KW %U"
