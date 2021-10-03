@@ -17,6 +17,7 @@ Options:
 EOL
     exit 0
 }
+set -e
 
 # Your preferred application with arguments
 MEDIA_PLAYER="mpv"
@@ -25,21 +26,42 @@ IMAGE_VIEWER="feh -."
 path=$(echo $PATH | sed "s|$HOME/bin:||g")
 export PATH=$path
 
-open() {
-    # Check what kind of link is being supplied
+# Open an audio with content-type audio/*
+open_audio () {
+    $i3_sensible_terminal $MEDIA_PLAYER "$1"
+}
+
+# Open an url with content-type image/*
+open_image () {
+    setsid $IMAGE_VIEWER "$1" 2>&1 >/dev/null &
+}
+
+# Open an url with content-type video/*
+open_video () {
+    if [ "$2" = "true" ]; then
+        case "$MEDIA_PLAYER" in mpv*) MEDIA_PLAYER="$MEDIA_PLAYER --loop-file=inf" ;; esac
+    fi
+    setsid $MEDIA_PLAYER "$1" 2>&1 >/dev/null &
+}
+
+# Open an url with content-types text/html and others
+open_other () {
     case "$1" in
         http?://invidio.us/watch*|http?://*hooktube.com/watch*|http?://*youtube.com/watch*|http?://*youtu.be/*|rtmp://*)
-            setsid $MEDIA_PLAYER "$1" >/dev/null 2>&1 &
+            open_video "$1"
             ;;
         http?://*twitter.com/*)
             setsid xdg-open "$(echo "$1" | sed -E 's/(mobile.)*twitter.com/nitter.snopyta.org/')" &
             ;;
         http://*|https://*|gopher://*)
-            case "$1" in *.onion*) torsocks=torsocks ;; esac
-            tmp="$(mktemp)"
-            $torsocks curl -L "$1" > "$tmp"
-            open_file "$tmp" "$1"
-            rm "$tmp"
+            # Not interested in onion links right now.
+            # Reimplementing it ad a later poing
+            #case "$1" in *.onion*) torsocks=torsocks ;; esac
+            #tmp="$(mktemp)"
+            #$torsocks curl -L "$1" > "$tmp"
+            #open_file "$tmp" "$1"
+            #rm "$tmp"
+            setsid xdg-open "$1"
             ;;
         /*)
             open_file "$1" "file://$1"
@@ -49,19 +71,40 @@ open() {
     esac
 }
 
-open_file() {
-    type="$(file -b "$1")"
+open() {
+    # Check what kind of link is being supplied
+    content_type=$(curl -I "$1" \
+        | grep -i '^content-type:' \
+        | sed -E 's/^content-type: ([^;]+).*$/\1/gi')
 
-    case "$type" in
+    case "$content_type" in
+        (video*)
+            open_video "$1"
+            ;;
+        (image*)
+            open_image "$1"
+            ;;
+        (audio*)
+            open_audio "$1"
+            ;;
+        (*)
+            open_other "$1"
+            ;;
+    esac
+}
+
+open_file() {
+    content_type="$(file -b "$1")"
+
+    case "$content_type" in
         JPEG*|PNG*)
-            setsid $IMAGE_VIEWER "$1" 2>&1 >/dev/null &
+            open_image "$1"
             ;;
         *MP4*|WebM*|GIF*)
-            case "$MEDIA_PLAYER" in mpv*) MEDIA_PLAYER="$MEDIA_PLAYER --loop-file=inf" ;; esac
-            setsid $MEDIA_PLAYER "$1" 2>&1 >/dev/null &
+            open_video "$1"
             ;;
         *audio*|*Audio*)
-            $i3_sensible_terminal $MEDIA_PLAYER "$1"
+            open_audio "$1"
             ;;
         *)
             case "$2" in
