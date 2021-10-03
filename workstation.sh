@@ -1,8 +1,8 @@
 #!/bin/sh
 # Some magic script to setup my work environment with my docking station.
 LVDS1_MODE="1600x900"
-HDMI2_MODE="1920x1080"
-VGA1_MODE="1280x1024"
+VGA1_MODE="1920x1080"
+HDMI2_MODE="1280x1024"
 
 if uname -a  | grep -i nixos >/dev/null 2>&1;
 then
@@ -48,14 +48,14 @@ xrandr \
     --output "$DP2" --off \
     --output "$DP3" --off \
     --output "$HDMI1" --off \
-    --output "$HDMI2" \
+    --output "$HDMI2" --off \
+    --output "$VGA1" \
         --primary \
-        --mode "$HDMI2_MODE" \
+        --mode "$VGA1_MODE" \
         --pos 0x0 \
         --rotate normal \
-    --output "$HDMI3" --off \
-    --output "$VGA1" \
-        --mode "$VGA1_MODE" \
+    --output "$HDMI3" \
+        --mode "$HDMI2_MODE" \
         --pos 1920x0 \
         --rotate normal \
         --right-of "$VGA1" \
